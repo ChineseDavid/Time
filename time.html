@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time</title>
+    <style>
+      body,
+      html {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background-color: #f4f4f5;
+      }
+      @font-face {
+        font-family: ali;
+        src: url('./font/Alibaba-PuHuiTi-Light.otf');
+      }
+      #time {
+        margin: 100px auto;
+        font-size: 100px;
+        text-align: center;
+        font-family: ali;
+        user-select: none;
+      }
+      #time .second {
+        font-size: 36px;
+        display: inline-block;
+      }
+      #mil_second {
+        color: #ccc;
+        font-size: 52px;
+        position: fixed;
+        font-family: ali;
+        bottom: 10px;
+        right: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="time">
+      <span class="text">14:45</span>
+      <div class="second">60</div>
+    </div>
+    <div id="mil_second">666</div>
+    <script>
+      let isCountDown = true; // 是否倒计时
+      document.onclick = function () {
+        isCountDown = !isCountDown;
+      };
+      let color = [
+        '#ff4d4f',
+        '#ff7a45',
+        '#ffa940',
+        '#ffc53d',
+        '#ffec3d',
+        '#bae637',
+        '#73d13d',
+        '#36cfc9',
+        '#40a9ff',
+      ];
+      function isSingle(num) {
+        return num >= 10 ? num : '0' + num;
+      }
+      function setTime() {
+        const time = new Date();
+        let mil_second, second, minute, hour;
+        if (isCountDown) {
+          const now_date = `${time.getFullYear()}-
+            ${time.getMonth() + 1}-
+          ${time.getDate()}`;
+          const leave_time =
+            new Date(`${now_date} 18:00:00`).getTime() - new Date().getTime();
+          mil_second = leave_time % 1000;
+          second = isSingle(Math.floor(leave_time / 1000) % 60);
+          minute = isSingle(Math.floor(leave_time / 1000 / 60) % 60);
+          hour = isSingle(Math.floor(leave_time / 1000 / 3600) % 24);
+        } else {
+          mil_second = time.getTime() % 1000;
+          second = isSingle(time.getSeconds());
+          minute = isSingle(time.getMinutes());
+          hour = isSingle(time.getHours());
+        }
+        document.querySelector('#time').style.color =
+          color[hour * 1] || color[8];
+        document.querySelector('#time .text').innerText = `${hour}:${minute}`;
+        document.querySelector('#time .second').innerText = second;
+        document.querySelector('#mil_second').innerText = mil_second;
+        requestAnimationFrame(setTime);
+      }
+      setTime();
+    </script>
+  </body>
+</html>
