@@ -139,9 +139,9 @@
     </div>
     <div class="reset-button">重置下班时间</div>
     <script>
-        function getOption(length) {
+        function getOption(length, step, init) {
             let html = '';
-            for (let i = 0; i < length; i++) {
+            for (let i = init || 0; i < length; i += step) {
                 html += `<option value="${i}">${i}</option>`;
             }
             return html;
@@ -162,8 +162,8 @@
 
         let leave_time = localStorage.getItem('leave_time');
         if (!leave_time) {
-            const hourListHtml = getOption(24);
-            const minuteListHtml = getOption(60);
+            const hourListHtml = getOption(24, 1, 16);
+            const minuteListHtml = getOption(60, 5);
             document.querySelector('#hour').innerHTML = hourListHtml;
             document.querySelector('#minute').innerHTML = minuteListHtml;
             document.querySelector('#time-modal').style.display = 'block';
