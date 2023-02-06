@@ -1,97 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Time</title>
     <style>
-      body,
-      html {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        background-color: #f4f4f5;
-      }
-      @font-face {
-        font-family: ali;
-        src: url('./font/Alibaba-PuHuiTi-Light.otf');
-      }
-      #time {
-        margin: 100px auto;
-        font-size: 100px;
-        text-align: center;
-        font-family: ali;
-        user-select: none;
-      }
-      #time .second {
-        font-size: 36px;
-        display: inline-block;
-      }
-      #mil_second {
-        color: #ccc;
-        font-size: 52px;
-        position: fixed;
-        font-family: ali;
-        bottom: 10px;
-        right: 20px;
-      }
+        @font-face {
+            font-family: ali;
+            src: url("./font/Alibaba-PuHuiTi-Light.otf");
+        }
+
+        body,
+        html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f4f4f5;
+            font-family: ali;
+        }
+
+        #time {
+            margin: 100px auto;
+            font-size: 100px;
+            text-align: left;
+            user-select: none;
+            transition: 1s;
+            width: 360px;
+            position: relative;
+            text-align: center;
+        }
+
+        #time .text-tip{
+            position: absolute;
+            top: -20px;
+            font-size: 20px;
+        }
+
+        #time .second {
+            font-size: 36px;
+            display: inline-block;
+        }
+
+        #mil_second {
+            color: #ccc;
+            font-size: 52px;
+            position: fixed;
+            font-family: ali;
+            bottom: 10px;
+            right: 20px;
+        }
+
+        #time-modal {
+            position: absolute;
+            z-index: 1;
+            left: 50%;
+            top: 20%;
+            transform: translateX(-50%);
+            width: 400px;
+            padding: 20px 40px;
+            border-radius: 4px;
+            box-shadow: 0 0 4px 2px rgba(0,0,0,.1);
+            background-color: white;
+            box-sizing: border-box;
+            display: none;
+        }
+
+        #time-modal .time-modal-title {
+            margin-bottom: 20px;
+        }
+
+        #time-modal .time-modal-content {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            color: #666;
+        }
+        #time-modal .time-modal-button-list {
+            display: flex;
+            justify-content: flex-end;
+        }
+         #time-modal .time-modal-button{
+            border-radius: 4px;
+            padding: 4px 12px;
+            color: white;
+            background-color: #4073ff;
+            cursor: pointer;
+         }
+         .reset-button{
+            position: absolute;
+            color: #ccc;
+            right: 20px;
+            top: 20px;
+         }
+          .reset-button:hover{
+            color: #aaa;
+            cursor: pointer;
+          }
+          #leave {
+            font-size: 30px;
+            text-align: center;
+            display: none;
+            transition: .1s linear;
+            width: 320px;
+            line-height: 50px;
+            position: absolute;
+          }
     </style>
-  </head>
-  <body>
+</head>
+
+<body>
     <div id="time">
-      <span class="text">14:45</span>
-      <div class="second">60</div>
+        <span class="text-tip">下班倒计时</span>
+        <span class="text">00:00</span>
+        <div class="second">00</div>
     </div>
-    <div id="mil_second">666</div>
+    <div id="leave">别瞅了，你已经下班了</div>
+    <div id="mil_second">000</div>
+    <div class="time-modal" id="time-modal">
+        <div class="time-modal-title">请输入下班时间</div>
+        <div class="time-modal-content">
+            <div class="time-modal-select">
+                <select name="hour" id="hour">
+                </select>
+            </div>
+            <span class="time-modal-label">点</span>
+            <div class="time-modal-select">
+                <select name="minute" id="minute">
+                </select>
+            </div>
+            <span class="time-modal-label">分</span>
+        </div>
+        <div class="time-modal-button-list">
+            <div class="time-modal-button">确定</div>
+        </div>
+    </div>
+    <div class="reset-button">重置下班时间</div>
     <script>
-      let isCountDown = true; // 是否倒计时
-      document.onclick = function () {
-        isCountDown = !isCountDown;
-      };
-      let color = [
-        '#ff4d4f',
-        '#ff7a45',
-        '#ffa940',
-        '#ffc53d',
-        '#ffec3d',
-        '#bae637',
-        '#73d13d',
-        '#36cfc9',
-        '#40a9ff',
-      ];
-      function isSingle(num) {
-        if (num < 0) return '00';
-        return num >= 10 ? num : '0' + num;
-      }
-      function setTime() {
-        const time = new Date();
-        let mil_second, second, minute, hour;
-        if (isCountDown) {
-          const now_date = `${time.getFullYear()}-
+        function getOption(length) {
+            let html = '';
+            for (let i = 0; i < length; i++) {
+                html += `<option value="${i}">${i}</option>`;
+            }
+            return html;
+        }
+
+        document.querySelector('.reset-button').onclick = function(){
+            localStorage.setItem('leave_time','');
+            window.location.href = window.location.href;
+        }
+
+        document.querySelector('.time-modal-button').onclick = function(){
+            const hour = document.querySelector('[name=hour]').value;
+            const minute = document.querySelector('[name=minute]').value;
+            localStorage.setItem('leave_time',`${hour}:${minute}`);
+            document.querySelector('#time-modal').style.display = 'none';
+            window.location.href = window.location.href;
+        }
+
+        let leave_time = localStorage.getItem('leave_time');
+        if (!leave_time) {
+            const hourListHtml = getOption(24);
+            const minuteListHtml = getOption(60);
+            document.querySelector('#hour').innerHTML = hourListHtml;
+            document.querySelector('#minute').innerHTML = minuteListHtml;
+            document.querySelector('#time-modal').style.display = 'block';
+        }
+        let isCountDown = true; // 是否倒计时
+        let isLeave = false; // 是否下班了
+        document.onclick = function () {
+            isCountDown = !isCountDown;
+            document.querySelector('.text-tip').innerHTML = isCountDown ? '下班倒计时' : '当前时间';
+        };
+        let color = [
+            "#ff4d4f",
+            "#ff7a45",
+            "#ffa940",
+            "#ffc53d",
+            "#bae637",
+            "#73d13d",
+            "#36cfc9",
+            "#40a9ff",
+        ];
+        function isSingle(num) {
+            return num >= 10 ? num : "0" + num;
+        }
+        function setTime() {
+            if(!leave_time) return setTimeout(setTime, 1000);
+            const time = new Date();
+            let mil_second, second, minute, hour;
+            if (isCountDown) {
+                const now_date = `${time.getFullYear()}-
             ${time.getMonth() + 1}-
           ${time.getDate()}`;
-          const leave_time =
-            new Date(`${now_date} 19:00:00`).getTime() - new Date().getTime();
-          mil_second = leave_time % 1000;
-          second = isSingle(Math.floor(leave_time / 1000) % 60);
-          minute = isSingle(Math.floor(leave_time / 1000 / 60) % 60);
-          hour = isSingle(Math.floor(leave_time / 1000 / 3600) % 24);
-        } else {
-          mil_second = time.getTime() % 1000;
-          second = isSingle(time.getSeconds());
-          minute = isSingle(time.getMinutes());
-          hour = isSingle(time.getHours());
+                const _time =
+                    new Date(`${now_date} ${leave_time}:00`).getTime() - new Date().getTime();
+                if(_time > 0){
+                    mil_second = _time % 1000;
+                    second = isSingle(Math.floor(_time / 1000) % 60);
+                    minute = isSingle(Math.floor(_time / 1000 / 60) % 60);
+                    hour = isSingle(Math.floor(_time / 1000 / 3600) % 24);
+                }else{
+                    document.querySelector('#time').style.display = 'none';
+                    document.querySelector('#leave').style.display = 'block';
+                    isLeave = true;
+                    return ;
+                }
+            } else {
+                mil_second = time.getTime() % 1000;
+                second = isSingle(time.getSeconds());
+                minute = isSingle(time.getMinutes());
+                hour = isSingle(time.getHours());
+            }
+            document.querySelector("#time .text").innerText = `${hour}:${minute}`;
+            document.querySelector("#time .second").innerText = second;
+            document.querySelector("#mil_second").innerText = mil_second;
+            requestAnimationFrame(setTime);
         }
-        document.querySelector('#time').style.color =
-          color[hour * 1] || color[8];
-        document.querySelector('#time .text').innerText = `${hour}:${minute}`;
-        document.querySelector('#time .second').innerText = second;
-        document.querySelector('#mil_second').innerText = mil_second;
-        requestAnimationFrame(setTime);
-      }
-      setTime();
+        setTime();
+        function setColor(i = 0){
+            !isLeave? 
+            document.querySelector("#time").style.color = color[i]:
+            document.querySelector("#leave").style.color = color[i];
+            setTimeout(setColor, 1000, (i + 1 < color.length? i + 1: 0));
+        }
+        setColor();
+        function runText(x, y, XStep, YStep){
+            if(!isLeave) return setTimeout(runText, 1000);
+            const XRange = window.innerWidth - 320;
+            const YRange = window.innerHeight - 50;
+            if(x !== undefined && y !== undefined ){
+                if(x + XStep > XRange || x + XStep < 0) {
+                    XStep = -XStep;
+                }
+                x = x + XStep;
+                if(y + YStep > YRange || y + YStep < 0) {
+                    YStep = -YStep;
+                }
+                y = y + YStep;
+            } else {
+                x = Math.round(Math.random() * XRange);
+                y = Math.round(Math.random() * YRange);
+                XStep = 2;
+                YStep = 1;
+            }
+            document.querySelector("#leave").style.left = x + 'px';
+            document.querySelector("#leave").style.top = y + 'px';
+            requestAnimationFrame(() => runText(x, y, XStep, YStep));
+        }
+        runText();
     </script>
-  </body>
+</body>
+
 </html>
